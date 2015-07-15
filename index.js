@@ -19,18 +19,24 @@
 
 var VError = require('verror');
 
+var bundlers = {
+	dust: require('./bundler/dust'),
+	none: require('./bundler/none')
+};
+
 function bundalo(config) {
 	var Bundler;
 	var engine = config.engine || 'none';
-	if (config.contentPath === undefined) {
-		throw new Error("[bundalo] Please provide a contentPath");
+	if (!config.contentPath) {
+		throw new TypeError("Please provide a contentPath");
 	}
-	try {
-		Bundler = require("./bundler/" + engine);
-	} catch (err) {
-		throw new VError(err, "[bundalo] Please provide a valid engine property on the config parameter");
+
+	Bundler = bundlers[engine];
+	if (Bundler) {
+		return new Bundler(config);
+	} else {
+		throw new VError("engine must be one of %j", bundlers);
 	}
-	return new Bundler(config);
 }
 module.exports = bundalo;
 
