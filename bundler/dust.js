@@ -45,10 +45,12 @@ Dust.prototype.get = function (config, callback) {
 			}
 
 			try {
-				cb(null, spud.parse(out));
+                var parsed = spud.parse(out);
 			} catch (e) {
 				cb(e);
 			}
+
+            cb(null, parsed);
 		}));
 	}
 
@@ -62,10 +64,11 @@ Dust.prototype.get = function (config, callback) {
 			try {
 				var compiled = that.dust.compile(bundleBuffer.toString(), cacheKey);
 				that.dust.loadSource(compiled);
-				return dustRender(cacheKey, config.model, cb);
 			} catch (dustErr) {
 				return cb(dustErr);
 			}
+
+            return dustRender(cacheKey, config.model, cb);
 		}));
 	}
 
