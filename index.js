@@ -33,7 +33,15 @@ function bundalo(config) {
 
 	Bundler = bundlers[engine];
 	if (Bundler) {
-		return new Bundler(config);
+		return new Bundler({
+            bundle: config.bundle,
+            locale: config.locale || config.locality,
+            cache: config.cache,
+            model: config.model,
+            contentPath: config.contentPath,
+            formatPath: config.formatPath,
+            fallback: config.fallback
+        });
 	} else {
 		throw new VError("engine must be one of %j", bundlers);
 	}
