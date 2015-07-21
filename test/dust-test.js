@@ -1,24 +1,34 @@
 /* global describe, it, before */
+/*eslint no-underscore-dangle: 0*/
 'use strict';
-//var dustjs = require("dustjs-linkedin");
-var dust = require('dustjs-linkedin');
 var bundalo = require("../index");
 var engine = "dust";
+var path = require('path');
+var assert = require('assert');
 
 describe("bundalo dust bundler @dust@", function () {
 	it("should maintain one cache per instance", function (done) {
-		var contentPath =  process.cwd() + "/test/fixture/nolocale";
-		var fallback =  "";
+		var contentPath = path.join(__dirname, "fixture", "nolocale");
+		var fallback = "";
 		var bundloo = bundalo({"contentPath": contentPath, "engine": engine, "fallback": fallback});
 		var bundlee = bundalo({"contentPath": contentPath, "engine": engine, "fallback": fallback});
 		bundloo.get({
-			'bundle': 'nest/dusta',
-			'locality': ''
+			bundle: 'nest/dusta',
+			locality: '',
+			model: {
+				name: "World"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data.greeting && bundloo.__cache()['/nest/dusta.properties'] && !bundlee.__cache()['/nest/dusta.properties']) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.greeting, "Hello, World");
+				assert.ok(bundloo.__cache()[path.normalize('nest/dusta.properties')]);
+				assert.ok(!bundlee.__cache()[path.normalize('nest/dusta.properties')]);
 				done();
-			} else {
-				done(new Error("Kablooey"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
@@ -26,25 +36,33 @@ describe("bundalo dust bundler @dust@", function () {
 
 describe("bundalo dust bundler @dust@disableCache@", function () {
 	it("should not maintain cache", function (done) {
-		var contentPath =  process.cwd() + "/test/fixture/nolocale";
-		var fallback =  "";
+		var contentPath = path.join(__dirname, "fixture", "nolocale");
+		var fallback = "";
 		var bundloo = bundalo({"contentPath": contentPath, "engine": engine, "fallback": fallback, "cache": false});
 		bundloo.get({
-			'bundle': 'nest/dusta',
-			'locality': ''
+			bundle: 'nest/dusta',
+			locality: '',
+			model: {
+				name: 'World'
+			}
 		}, function bundaloReturn(err, data) {
-			console.log(bundloo.__cache());
-			if (data.greeting && !bundloo.__cache()['/nest/dusta.properties']) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.greeting, "Hello, World");
+				assert.ok(data.greeting);
+				assert.ok(!bundloo.__cache()[path.normalize('nest/dusta.properties')]);
 				done();
-			} else {
-				done(new Error("Kablooey"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 });
 
 describe("bundalo dust bundler, no locale @dust@nofallback@nolocale@", function () {
-	var contentPath = process.cwd() + "/test/fixture/nolocale";
+	var contentPath = path.join(__dirname, "fixture", "nolocale");
 	var fallback = "";
 	var _bundalo;
 	before(function () {
@@ -54,58 +72,90 @@ describe("bundalo dust bundler, no locale @dust@nofallback@nolocale@", function 
 
 	it("should give back single bundle with no key when config.bundle is a string", function (done) {
 		_bundalo.get({
-			'bundle': 'nest/dusta',
-			'locality': ''
+			bundle: 'nest/dusta',
+			locality: '',
+			model: {
+				name: "World"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data.greeting && _bundalo.__cache()['/nest/dusta.properties']) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.greeting, "Hello, World");
+				assert.ok(_bundalo.__cache()[path.normalize('nest/dusta.properties')]);
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 	it("should give back bundle with key when config.bundle is an Array", function (done) {
 		_bundalo.get({
-			'bundle': ['nest/dusta'],
-			'locality': ''
+			bundle: ['nest/dusta'],
+			locality: '',
+			model: {
+				name: "World"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data['nest/dusta'].greeting && _bundalo.__cache()['/nest/dusta.properties']) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data['nest/dusta'].greeting, "Hello, World");
+				assert.ok(_bundalo.__cache()[path.normalize('nest/dusta.properties')]);
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 	it("should give back multiple bundles", function (done) {
 		_bundalo.get({
-			'bundle': ['nest/dusta', 'nest/dustb'],
-			'locality': ''
+			bundle: ['nest/dusta', 'nest/dustb'],
+			locality: '',
+			model: {
+				name: "World"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data['nest/dusta'].greeting && data['nest/dustb'].signoff) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data['nest/dusta'].greeting, "Hello, World");
+				assert.equal(data['nest/dustb'].signoff, "Goodbye, World");
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 	it("should give back multiple bundles with alias", function (done) {
 		_bundalo.get({
-			'bundle': {
-				'dusta': 'nest/dusta',
-				'dustb': 'nest/dustb'
+			bundle: {
+				dusta: 'nest/dusta',
+				dustb: 'nest/dustb'
 			},
-			'locality': ''
+			locality: '',
+			model: {
+				name: "World"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data.dusta.greeting && data.dustb.signoff) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.dusta.greeting, "Hello, World");
+				assert.equal(data.dustb.signoff, "Goodbye, World");
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 });
-//
-//
+
+
 describe("bundalo dust bundler, existing locale @dust@nofallback@locale@", function () {
 	var contentPath = process.cwd() + "/test/fixture/locales";
 	var fallback = "en-US";
@@ -117,40 +167,64 @@ describe("bundalo dust bundler, existing locale @dust@nofallback@locale@", funct
 
 	it("should give back single bundle", function (done) {
 		_bundalo.get({
-			'bundle': 'nest/dusta',
-			'locality': 'es-ES'
+			bundle: 'nest/dusta',
+			locality: 'es-ES',
+			model: {
+				name: "Mundo"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data.greeting) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.greeting, "Hola al Mundo");
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 	it("should give back multiple bundles", function (done) {
 		_bundalo.get({
-			'bundle': ['nest/dusta', 'nest/dustb'],
-			'locality': 'es-ES'
+			bundle: ['nest/dusta', 'nest/dustb'],
+			locality: 'es-ES',
+			model: {
+				name: "Mundo"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data['nest/dusta'].greeting && data['nest/dustb'].signoff && _bundalo.__cache()['/ES/es/nest/dustb.properties']) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data['nest/dusta'].greeting, "Hola al Mundo");
+				assert.equal(data['nest/dustb'].signoff, "Adios al Mundo!");
+				assert.ok(_bundalo.__cache()[path.normalize('ES/es/nest/dustb.properties')]);
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 	it("should give back multiple bundles with alias", function (done) {
 		_bundalo.get({
-			'bundle': {
-				'dusta': 'nest/dusta',
-				'dustb': 'nest/dustb'
+			bundle: {
+				dusta: 'nest/dusta',
+				dustb: 'nest/dustb'
 			},
-			'locality': 'es-ES'
+			locality: 'es-ES',
+			model: {
+				name: "Mundo"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data.dusta.greeting && data.dustb.signoff) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.dusta.greeting, "Hola al Mundo");
+				assert.equal(data.dustb.signoff, "Adios al Mundo!");
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
@@ -164,48 +238,69 @@ describe("bundalo dust bundler, fallback locale @dust@fallback@", function () {
 	var _bundalo;
 	before(function () {
 		_bundalo = bundalo({
-			'contentPath': contentPath,
-			'locality': locality,
-			'fallback': fallback,
-			'engine': 'dust'
+			contentPath: contentPath,
+			locality: locality,
+			fallback: fallback,
+			engine: 'dust'
 		});
 		return;
 	});
 	it("should give back single bundle", function (done) {
 		_bundalo.get({
-			'bundle': 'nest/dusta',
-			'model': {'name': 'Friend'}
+			bundle: 'nest/dusta',
+			model: {
+				name: 'Mundo'
+			}
 		}, function bundaloReturn(err, data) {
-			if (data.greeting) {
-				console.log(data.greeting);
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.greeting, "Hola al Mundo");
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 	it("should give back multiple bundles", function (done) {
 		_bundalo.get({
-			'bundle': ['nest/dusta', 'nest/dustb']
+			bundle: ['nest/dusta', 'nest/dustb'],
+			model: {
+				name: "Mundo"
+			}
 		}, function bundaloReturn(err, data) {
-			if (data['nest/dusta'].greeting && data['nest/dustb'].signoff) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data['nest/dusta'].greeting, "Hola al Mundo");
+				assert.equal(data['nest/dustb'].signoff, "Adios al Mundo!");
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
 	it("should give back multiple bundles with alias", function (done) {
 		_bundalo.get({
-			'bundle': {
-				'dusta': 'nest/dusta',
-				'dustb': 'nest/dustb'
+			bundle: {
+				dusta: 'nest/dusta',
+				dustb: 'nest/dustb'
+			},
+			model: {
+				name: "Mundo"
 			}
 		}, function bundaloReturn(err, data) {
-			if (data.dusta.greeting && data.dustb.signoff) {
+			if (err) {
+				return done(err);
+			}
+			try {
+				assert.equal(data.dusta.greeting, "Hola al Mundo");
+				assert.equal(data.dustb.signoff, "Adios al Mundo!");
 				done();
-			} else {
-				done(new Error("life isn't what you thought it would be"));
+			} catch (e) {
+				done(e);
 			}
 		});
 	});
